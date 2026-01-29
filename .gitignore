@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# generated seed data (re-generate with npm run seed)
+app/data/generated/
 
 # vercel
 .vercel
