@@ -1,0 +1,124 @@
+{
+  "anecdotes": [
+    {
+      "text": "Booba est surnommé 'Le Duc de Boulogne'",
+      "isTrue": true,
+      "difficulty": "easy",
+      "category": "general"
+    },
+    {
+      "text": "Jul a sorti plus de 20 albums en 10 ans",
+      "isTrue": true,
+      "difficulty": "easy",
+      "category": "album"
+    },
+    {
+      "text": "PNL refuse de montrer leurs visages en public",
+      "isTrue": true,
+      "difficulty": "easy",
+      "category": "general"
+    },
+    {
+      "text": "Orelsan a réalisé un documentaire sur lui-même",
+      "isTrue": true,
+      "difficulty": "medium",
+      "category": "general"
+    },
+    {
+      "text": "Ninho vient du 91 (Essonne)",
+      "isTrue": true,
+      "difficulty": "medium",
+      "category": "géo"
+    },
+    {
+      "text": "SCH représente Marseille et le 13",
+      "isTrue": true,
+      "difficulty": "easy",
+      "category": "géo"
+    },
+    {
+      "text": "Damso est originaire de Belgique",
+      "isTrue": true,
+      "difficulty": "easy",
+      "category": "géo"
+    },
+    {
+      "text": "Nekfeu faisait partie du groupe 1995",
+      "isTrue": true,
+      "difficulty": "medium",
+      "category": "general"
+    },
+    {
+      "text": "Freeze Corleone porte souvent des vêtements Louis Vuitton",
+      "isTrue": true,
+      "difficulty": "medium",
+      "category": "general"
+    },
+    {
+      "text": "Kaaris est connu pour ses dents en or",
+      "isTrue": true,
+      "difficulty": "easy",
+      "category": "general"
+    },
+    {
+      "text": "Jul vient de Paris",
+      "isTrue": false,
+      "difficulty": "easy",
+      "category": "géo"
+    },
+    {
+      "text": "Booba et Jul ont fait un album ensemble",
+      "isTrue": false,
+      "difficulty": "easy",
+      "category": "collab"
+    },
+    {
+      "text": "PNL n'a jamais tourné de clip vidéo",
+      "isTrue": false,
+      "difficulty": "medium",
+      "category": "general"
+    },
+    {
+      "text": "Ninho est le frère de Booba",
+      "isTrue": false,
+      "difficulty": "easy",
+      "category": "general"
+    },
+    {
+      "text": "Orelsan a vécu aux États-Unis pendant 10 ans",
+      "isTrue": false,
+      "difficulty": "medium",
+      "category": "general"
+    },
+    {
+      "text": "SCH vient de Lyon",
+      "isTrue": false,
+      "difficulty": "easy",
+      "category": "géo"
+    },
+    {
+      "text": "Kaaris représente le 13 (Marseille)",
+      "isTrue": false,
+      "difficulty": "medium",
+      "category": "géo"
+    },
+    {
+      "text": "Nekfeu est né au Sénégal",
+      "isTrue": false,
+      "difficulty": "medium",
+      "category": "general"
+    },
+    {
+      "text": "Damso et PNL ont fait 10 featurings ensemble",
+      "isTrue": false,
+      "difficulty": "hard",
+      "category": "collab"
+    },
+    {
+      "text": "Jul ne joue d'aucun instrument",
+      "isTrue": false,
+      "difficulty": "hard",
+      "category": "general"
+    }
+  ]
+}

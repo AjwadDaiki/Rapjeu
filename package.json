@@ -1,0 +1,44 @@
+{
+  "name": "kimitest",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "next build",
+    "start": "NODE_ENV=production tsx server.ts",
+    "lint": "eslint",
+    "seed": "tsx scripts/seed.ts",
+    "seed:dry": "echo 'Vérifiez .env avec vos clés Spotify/Genius puis lancez: npm run seed'",
+    "mongo:setup": "node scripts/setup-mongodb-local.js",
+    "crawl": "node scripts/crawl-OVERNIGHT.js",
+    "crawl:watch": "node scripts/crawl-rap-fr-improved.js && echo 'Attente 24h...' && timeout /t 86400 /nobreak && npm run crawl:watch"
+  },
+  "dependencies": {
+    "axios": "^1.13.4",
+    "dotenv": "^17.2.3",
+    "fast-levenshtein": "^3.0.0",
+    "framer-motion": "^12.29.2",
+    "howler": "^2.2.4",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.1.5",
+    "next": "16.1.5",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/howler": "^2.2.12",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.5",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,573 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0B1220;
+  --foreground: #F7FBFF;
+
+  /* Typography */
+  --font-sans: var(--font-space);
+  --font-display: var(--font-archivo);
+
+  /* Brand */
+  --rj-primary: #2F80ED;
+  --rj-primary-hover: #4C93F5;
+  --rj-primary-dark: #1F6CD2;
+  --rj-secondary: #F2C94C;
+  --rj-secondary-hover: #F6D66B;
+  --rj-secondary-dark: #E1B83E;
+  --rj-accent: #1F6CD2;
+  --rj-accent-hover: #2F80ED;
+  --rj-accent-dark: #1A58A8;
+  --rj-ink: #0B1220;
+  --rj-rap: #0D1B2E;
+  --rj-surface: rgba(17, 27, 44, 0.85);
+  --rj-border: rgba(247, 251, 255, 0.12);
+  --rj-border-strong: rgba(247, 251, 255, 0.2);
+  --rj-border-hover: rgba(247, 251, 255, 0.32);
+  --rj-bg: #0B1220;
+  --rj-bg-elevated: #111B2C;
+  --rj-bg-card: #142035;
+  --rj-bg-hover: #182641;
+  --rj-text: #F7FBFF;
+  --rj-text-secondary: #D4E2F2;
+  --rj-text-muted: #9AB0C8;
+  --rj-success: #22C55E;
+  --rj-error: #EF4444;
+  --rj-danger: #EF4444;
+  --rj-warning: #F2C94C;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-sm: 0 8px 20px rgba(6, 8, 12, 0.25);
+  --shadow-md: 0 18px 44px rgba(6, 8, 12, 0.35);
+  --shadow-lg: 0 36px 90px rgba(6, 8, 12, 0.45);
+  --shadow-primary: 0 18px 44px rgba(47, 128, 237, 0.35);
+  --shadow-secondary: 0 18px 44px rgba(242, 201, 76, 0.32);
+
+  /* Couleurs des �quipes */
+  --team-a-primary: #2F80ED;
+  --team-a-secondary: #1F6CD2;
+  --team-b-primary: #F2C94C;
+  --team-b-secondary: #E1B83E;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-space);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 600;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   ANIMATIONS PERSONNALISÉES
+   ============================================ */
+
+/* Screen shake intensités */
+@keyframes shake-light {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2px, 1px); }
+  20% { transform: translate(2px, -1px); }
+  30% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  50% { transform: translate(-1px, 0); }
+  60% { transform: translate(1px, 0); }
+  70% { transform: translate(0, 0); }
+}
+
+@keyframes shake-medium {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5px, 2px); }
+  20% { transform: translate(5px, -2px); }
+  30% { transform: translate(-5px, 2px); }
+  40% { transform: translate(5px, -2px); }
+  50% { transform: translate(-3px, 0); }
+  60% { transform: translate(3px, 0); }
+  70% { transform: translate(-1px, 0); }
+  80% { transform: translate(1px, 0); }
+  90% { transform: translate(0, 0); }
+}
+
+@keyframes shake-heavy {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-10px, 5px); }
+  20% { transform: translate(10px, -5px); }
+  30% { transform: translate(-10px, 5px); }
+  40% { transform: translate(10px, -5px); }
+  50% { transform: translate(-5px, 0); }
+  60% { transform: translate(5px, 0); }
+  70% { transform: translate(-2px, 0); }
+  80% { transform: translate(2px, 0); }
+  90% { transform: translate(0, 0); }
+}
+
+.animate-shake-light {
+  animation: shake-light 0.5s ease-in-out;
+}
+
+.animate-shake-medium {
+  animation: shake-medium 0.5s ease-in-out;
+}
+
+.animate-shake-heavy {
+  animation: shake-heavy 0.5s ease-in-out;
+}
+
+/* Pulse glow pour les éléments actifs */
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 6px 18px rgba(240, 140, 58, 0.25);
+  }
+  50% { 
+    box-shadow: 0 10px 28px rgba(240, 140, 58, 0.35);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Flash pour les dégâts */
+@keyframes damage-flash {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.5; }
+}
+
+.animate-damage-flash {
+  animation: damage-flash 0.3s ease-in-out;
+}
+
+/* Barre de vie qui descend */
+@keyframes hp-drain {
+  0% { width: var(--hp-start); }
+  100% { width: var(--hp-end); }
+}
+
+.animate-hp-drain {
+  animation: hp-drain 0.5s ease-out forwards;
+}
+
+/* Effet de scanline rétro */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.scanline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+}
+
+/* Glitch effect pour les erreurs */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.animate-glitch {
+  animation: glitch 0.3s ease-in-out;
+}
+
+/* ============================================
+   UTILITAIRES DE JEU
+   ============================================ */
+
+/* Conteneur avec effet de verre */
+.glass-panel {
+  background: var(--rj-surface);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--rj-border);
+}
+
+/* Gradient de fond animé */
+.animated-gradient {
+  background: linear-gradient(
+    -45deg,
+    #0f1115,
+    #141821,
+    #1b222f,
+    #0f1115
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Effet de bruit */
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}
+
+/* Sélection de texte */
+::selection {
+  background: rgba(47, 128, 237, 0.3);
+  color: white;
+}
+
+/* ============================================
+   SPLIT BACKGROUND (Blue / Yellow + Lightning)
+   ============================================ */
+
+.rj-split-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(112deg, var(--rj-primary) 0%, var(--rj-primary-dark) 52%, var(--rj-secondary) 52%, var(--rj-secondary-hover) 100%);
+}
+
+.rj-split-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(55% 55% at 20% 20%, rgba(247, 251, 255, 0.12), transparent 60%),
+    radial-gradient(60% 60% at 80% 70%, rgba(247, 251, 255, 0.12), transparent 65%);
+  opacity: 0.7;
+}
+
+.rj-split-bolt {
+  position: absolute;
+  top: -32%;
+  left: 52%;
+  width: 260px;
+  height: 165%;
+  transform: translateX(-50%) rotate(22deg);
+  transform-origin: center center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 1) 100%);
+  clip-path: polygon(48% 0, 64% 0, 56% 26%, 72% 26%, 42% 100%, 54% 64%, 36% 64%);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.65), 0 0 100px rgba(255, 255, 255, 0.28);
+  opacity: 1;
+  z-index: 2;
+}
+
+.rj-split-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ============================================
+   COMPOSANTS RÉUTILISABLES
+   ============================================ */
+
+.btn-primary {
+  @apply px-6 py-3 rounded-lg font-bold text-white transition-all;
+  background: linear-gradient(135deg, var(--rj-primary), var(--rj-accent));
+  box-shadow: var(--shadow-sm);
+  @apply hover:scale-105 active:scale-95;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 rounded-lg font-bold text-white transition-all;
+  background: rgba(21, 26, 33, 0.7);
+  border: 1px solid var(--rj-border);
+  @apply hover:scale-105 active:scale-95;
+}
+
+/* Card avec hover effect */
+.game-card {
+  @apply rounded-xl border transition-all;
+  background: var(--rj-bg-card);
+  border-color: var(--rj-border);
+  @apply hover:shadow-lg;
+}
+
+/* Input de jeu */
+.game-input {
+  @apply w-full px-4 py-3 rounded-lg outline-none;
+  background: var(--rj-bg-elevated);
+  border: 2px solid var(--rj-border);
+  color: var(--rj-text);
+  @apply focus:ring-2;
+  box-shadow: none;
+  @apply transition-all;
+}
+
+.game-input:focus {
+  border-color: var(--rj-primary);
+  box-shadow: 0 0 0 3px rgba(240, 140, 58, 0.2);
+}
+
+/* Modern panels and pills */
+.rj-panel {
+  background: rgba(12, 20, 33, 0.85);
+  border: 1px solid var(--rj-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(16px);
+}
+
+.rj-panel-outline {
+  border-color: var(--rj-primary);
+}
+
+.rj-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(47, 128, 237, 0.18);
+  border: 1px solid rgba(47, 128, 237, 0.4);
+  color: #eaf2ff;
+}
+
+/* Team titles */
+.rj-team-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  line-height: 1;
+}
+
+.rj-team-title-lg {
+  font-size: clamp(22px, 3vw, 34px);
+}
+
+.rj-team-title-xl {
+  font-size: clamp(28px, 4vw, 52px);
+}
+
+.rj-progress {
+  background: linear-gradient(90deg, var(--rj-primary) 0%, var(--rj-secondary) 100%);
+}
+
+/* Quick recolor for game modes to match blue/yellow identity */
+.rj-game .bg-gray-800 { background-color: rgba(12, 20, 33, 0.85) !important; }
+.rj-game .bg-gray-900 { background-color: rgba(8, 14, 26, 0.92) !important; }
+.rj-game .border-purple-500,
+.rj-game .border-blue-500,
+.rj-game .border-emerald-500,
+.rj-game .border-cyan-500 { border-color: var(--rj-primary) !important; }
+.rj-game .text-purple-300,
+.rj-game .text-blue-300,
+.rj-game .text-cyan-300,
+.rj-game .text-emerald-400 { color: #d6e6ff !important; }
+.rj-game .bg-purple-600,
+.rj-game .bg-blue-600 { background-color: var(--rj-primary) !important; }
+.rj-game .bg-pink-600,
+.rj-game .bg-cyan-600,
+.rj-game .bg-emerald-600 { background-color: var(--rj-secondary) !important; }
+.rj-game .from-purple-500,
+.rj-game .from-blue-600,
+.rj-game .from-emerald-600 {
+  --tw-gradient-from: var(--rj-primary) !important;
+  --tw-gradient-stops: var(--rj-primary), var(--rj-secondary) !important;
+}
+.rj-game .to-pink-500,
+.rj-game .to-cyan-600,
+.rj-game .to-emerald-600 { --tw-gradient-to: var(--rj-secondary) !important; }
+
+/* Badge d'équipe */
+.team-badge-a {
+  @apply px-3 py-1 text-white text-sm font-bold rounded-full;
+  background: var(--team-a-primary);
+}
+
+.team-badge-b {
+  @apply px-3 py-1 text-white text-sm font-bold rounded-full;
+  background: var(--team-b-primary);
+}
+
+/* ============================================
+   RAP THEME OVERRIDES & UTILITIES
+   ============================================ */
+
+:root {
+  --background: #0B1220;
+  --foreground: #F7FBFF;
+  --neon-cyan: #2F80ED;
+  --neon-magenta: #F2C94C;
+  --neon-amber: #F2C94C;
+  --neon-lime: #22C55E;
+  --panel: rgba(17, 27, 44, 0.82);
+  --panel-strong: rgba(12, 20, 33, 0.94);
+  --panel-border: rgba(247, 251, 255, 0.14);
+  --panel-glow: rgba(47, 128, 237, 0.18);
+  --team-a-primary: #2F80ED;
+  --team-a-secondary: #1F6CD2;
+  --team-b-primary: #F2C94C;
+  --team-b-secondary: #E1B83E;
+}
+
+body {
+  background: var(--background);
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.rap-bg {
+  position: relative;
+  background:
+    radial-gradient(60% 60% at 12% 12%, rgba(46, 196, 182, 0.12), transparent 60%),
+    radial-gradient(55% 55% at 88% 18%, rgba(240, 140, 58, 0.12), transparent 60%),
+    radial-gradient(70% 70% at 50% 100%, rgba(242, 193, 78, 0.12), transparent 60%),
+    linear-gradient(180deg, #0f1115 0%, #141821 55%, #0f1115 100%);
+  overflow: hidden;
+}
+
+.rap-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.rap-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(46, 196, 182, 0.08), transparent 35%, rgba(240, 140, 58, 0.08));
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.hud-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-md);
+}
+
+.hud-panel-strong {
+  background: var(--panel-strong);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.neon-border {
+  box-shadow:
+    0 0 0 1px rgba(246, 242, 234, 0.08),
+    0 14px 32px rgba(6, 8, 12, 0.35);
+}
+
+.title-glow {
+  text-shadow: 0 8px 24px rgba(6, 8, 12, 0.4);
+}
+
+.btn-neo {
+  @apply px-6 py-3 rounded-xl font-bold text-white transition-all;
+  background: linear-gradient(135deg, var(--rj-primary), var(--rj-accent));
+  box-shadow: var(--shadow-primary);
+  color: var(--rj-ink);
+}
+
+.btn-neo:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 44px rgba(240, 140, 58, 0.35);
+}
+
+.btn-outline {
+  @apply px-5 py-2 rounded-lg font-semibold transition-all;
+  border: 1px solid rgba(246, 242, 234, 0.18);
+  background: rgba(15, 17, 21, 0.6);
+}
+
+.btn-outline:hover {
+  border-color: rgba(240, 140, 58, 0.6);
+  box-shadow: 0 10px 24px rgba(6, 8, 12, 0.35);
+}
+
+.chip {
+  @apply px-3 py-1 rounded-full text-xs uppercase tracking-widest;
+  background: rgba(246, 242, 234, 0.08);
+  border: 1px solid rgba(246, 242, 234, 0.14);
+}
+
+.team-panel-a {
+  border-color: rgba(46, 196, 182, 0.4);
+  box-shadow: 0 16px 32px rgba(6, 8, 12, 0.35);
+}
+
+.team-panel-b {
+  border-color: rgba(240, 140, 58, 0.4);
+  box-shadow: 0 16px 32px rgba(6, 8, 12, 0.35);
+}
+
+.team-panel-neutral {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.slot-panel {
+  background: rgba(21, 26, 33, 0.6);
+  border: 1px solid rgba(246, 242, 234, 0.08);
+}
+
+.slot-panel:hover {
+  border-color: rgba(246, 242, 234, 0.2);
+}
+
