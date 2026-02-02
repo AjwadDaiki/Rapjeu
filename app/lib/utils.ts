@@ -3,8 +3,8 @@
 // ============================================
 
 const FUZZY = {
-  MAX_LEVENSHTEIN_DISTANCE: 2,
-  MIN_SIMILARITY_RATIO: 0.7,
+  MAX_LEVENSHTEIN_DISTANCE: 3,
+  MIN_SIMILARITY_RATIO: 0.65,
 };
 
 // Alias communs pour les artistes (pour la résolution de noms)
@@ -314,16 +314,16 @@ export function formatTimeSeconds(ms: number): string {
 
 export const TEAM_COLORS = {
   A: {
-    primary: '#3B82F6', // Blue-500
-    secondary: '#1D4ED8', // Blue-700
-    accent: '#60A5FA', // Blue-400
-    dark: '#1E3A8A', // Blue-900
+    primary: '#2EC4B6', // Teal
+    secondary: '#249E92',
+    accent: '#6FE6DA',
+    dark: '#1E7B71',
   },
   B: {
-    primary: '#EAB308', // Yellow-500
-    secondary: '#A16207', // Yellow-700
-    accent: '#FDE047', // Yellow-300
-    dark: '#713F12', // Yellow-900
+    primary: '#F08C3A', // Burnt orange
+    secondary: '#C6712B',
+    accent: '#F6D069',
+    dark: '#9E5A21',
   },
 } as const;
 

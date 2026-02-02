@@ -4,6 +4,8 @@
 // CORRECTIONS: départements exacts, villes réelles
 // ============================================
 
+import { fuzzyMatch } from '../lib/utils';
+
 export interface Theme {
   id: string;
   title: string;
@@ -626,23 +628,16 @@ export function getThemesByDifficulty(difficulty: 'easy' | 'medium' | 'hard'): T
 }
 
 export function validateAnswer(theme: Theme, input: string): { isValid: boolean; matchedAnswer: string | null } {
-  const normalized = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-  
-  for (const answer of theme.validAnswers) {
-    const normAnswer = answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-    if (normalized === normAnswer) {
-      return { isValid: true, matchedAnswer: answer };
-    }
-    
-    // Check aliases
-    const aliases = theme.aliases[answer] || [];
-    for (const alias of aliases) {
-      const normAlias = alias.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      if (normalized === normAlias) {
-        return { isValid: true, matchedAnswer: answer };
-      }
-    }
+  // Use fuzzy matching with Levenshtein distance (≤2 errors) + alias support
+  const match = fuzzyMatch(input, theme.validAnswers, theme.aliases);
+
+  if (match.isValid) {
+    // Always return canonical name to prevent duplicates with different aliases
+    return {
+      isValid: true,
+      matchedAnswer: match.canonicalName || match.matchedAnswer
+    };
   }
-  
+
   return { isValid: false, matchedAnswer: null };
 }

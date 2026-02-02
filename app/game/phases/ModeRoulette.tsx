@@ -19,6 +19,8 @@ const MODE_ICONS: Record<GameMode, string> = {
   encheres: '💰',
   blind_test: '🎵',
   pixel_cover: '🖼️',
+  devine_qui: '🕵️',
+  continue_paroles: '📝',
 };
 
 const MODE_COLORS: Record<GameMode, string> = {
@@ -28,6 +30,8 @@ const MODE_COLORS: Record<GameMode, string> = {
   encheres: 'from-green-600 to-emerald-600',
   blind_test: 'from-red-600 to-rose-600',
   pixel_cover: 'from-indigo-600 to-violet-600',
+  devine_qui: 'from-orange-600 to-amber-600',
+  continue_paroles: 'from-emerald-600 to-teal-600',
 };
 
 export function ModeRoulette({ availableModes, selectedMode, duration, onComplete }: ModeRouletteProps) {

@@ -24,7 +24,7 @@ import {
   EncheresData,
 } from './app/types';
 import { generateRoomCode, generateId } from './app/lib/utils';
-import { TIMING } from './app/lib/constants';
+import { TIMING, DEFAULT_ROOM_CONFIG } from './app/lib/constants';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -50,17 +50,20 @@ const roomEventPollers = new Map<string, NodeJS.Timeout>();
 const roomLastPhase = new Map<string, GamePhase>();
 
 // Préchargement des données API
-import { preloadGameData } from './app/lib/gameDataService';
+import { preloadAllContent, startAutoRefresh } from './app/lib/contentAggregator';
 import { connectDB } from './app/lib/db';
 
 app.prepare().then(async () => {
   // Connexion MongoDB (optionnel)
   await connectDB();
-  
-  // Précharger les tracks et albums
-  await preloadGameData().catch(err => {
+
+  // Précharger TOUT le contenu depuis toutes les APIs
+  await preloadAllContent().catch(err => {
     console.warn('⚠️ Impossible de précharger les données API:', err.message);
   });
+
+  // Activer auto-refresh toutes les 6h
+  startAutoRefresh();
   
   const httpServer = createServer(handler);
   
@@ -94,19 +97,43 @@ app.prepare().then(async () => {
 
     socket.on('room:join', (roomCode: string, playerName: string, callback) => {
       try {
-        console.log(`📥 [${roomCode}] Tentative de join par ${playerName}`);
-        
+        const cleanName = playerName.trim().slice(0, 20);
+        console.log(`📥 [${roomCode}] Tentative de join par ${cleanName}`);
+
         const room = roomManager.getRoom(roomCode);
         if (!room) {
           console.log(`❌ [${roomCode}] Room introuvable`);
           callback(false, 'Room introuvable');
           return;
         }
-        
+
+        if (!cleanName) {
+          callback(false, 'Nom invalide');
+          return;
+        }
+
+        // Nom déjà utilisé (joueur connecté)
+        const nameLower = cleanName.toLowerCase();
+        const connectedDuplicate = Array.from(room.players.values()).find(
+          (p) => p.name.toLowerCase() === nameLower && p.isConnected
+        );
+        if (connectedDuplicate) {
+          if (connectedDuplicate.socketId === socket.id) {
+            currentPlayer = connectedDuplicate;
+            currentRoomCode = roomCode;
+            socket.join(roomCode);
+            socket.emit('room:joined', roomManager.serializeRoom(room), connectedDuplicate);
+            callback(true);
+            return;
+          }
+          callback(false, 'Nom déjà utilisé');
+          return;
+        }
+
         // Vérifier si ce joueur existe déjà (reconnexion)
         let existingPlayer: Player | undefined;
         for (const p of room.players.values()) {
-          if (p.name === playerName && !p.isConnected) {
+          if (p.name.toLowerCase() === nameLower && !p.isConnected) {
             existingPlayer = p;
             break;
           }
@@ -114,7 +141,7 @@ app.prepare().then(async () => {
         
         if (existingPlayer) {
           // Reconnexion
-          console.log(`🔄 [${roomCode}] Reconnexion de ${playerName}`);
+          console.log(`🔄 [${roomCode}] Reconnexion de ${cleanName}`);
           existingPlayer.socketId = socket.id;
           existingPlayer.isConnected = true;
           existingPlayer.disconnectedAt = undefined;
@@ -142,7 +169,7 @@ app.prepare().then(async () => {
         const player: Player = {
           id: generateId(),
           socketId: socket.id,
-          name: playerName.slice(0, 20),
+          name: cleanName,
           team: null,
           role: isFirstPlayer ? 'host' : 'player',
           isReady: false,
@@ -154,9 +181,9 @@ app.prepare().then(async () => {
         // Si premier joueur, définir comme host de la room
         if (isFirstPlayer) {
           room.hostId = player.id;
-          console.log(`👑 [${roomCode}] ${playerName} défini comme HOST (id: ${player.id})`);
+          console.log(`👑 [${roomCode}] ${cleanName} défini comme HOST (id: ${player.id})`);
         } else {
-          console.log(`👤 [${roomCode}] ${playerName} défini comme PLAYER (id: ${player.id})`);
+          console.log(`👤 [${roomCode}] ${cleanName} défini comme PLAYER (id: ${player.id})`);
         }
         
         currentPlayer = player;
@@ -166,7 +193,7 @@ app.prepare().then(async () => {
         socket.emit('room:joined', roomManager.serializeRoom(room), player);
         socket.to(roomCode).emit('room:updated', roomManager.serializeRoom(room));
         
-        console.log(`✅ [${roomCode}] ${playerName} a rejoint avec role: ${player.role}`);
+        console.log(`✅ [${roomCode}] ${cleanName} a rejoint avec role: ${player.role}`);
         callback(true);
       } catch (error) {
         console.error('Erreur join room:', error);
@@ -176,7 +203,7 @@ app.prepare().then(async () => {
 
     socket.on('room:leave', () => {
       if (!currentPlayer || !currentRoomCode) return;
-      
+
       const room = roomManager.getRoom(currentRoomCode);
       if (room) {
         // Marquer comme déconnecté plutôt que supprimer immédiatement
@@ -185,10 +212,30 @@ app.prepare().then(async () => {
           player.isConnected = false;
           player.disconnectedAt = Date.now();
         }
-        
+
         // Si game en cours, garder le joueur pour reconnexion
         if (room.gameState.phase === 'playing') {
           socket.to(currentRoomCode).emit('player:disconnected', currentPlayer.id);
+
+          // FIX MEMORY LEAK: Si tous les joueurs sont déconnectés, cleanup les timers
+          const connectedPlayers = Array.from(room.players.values()).filter(p => p.isConnected);
+          if (connectedPlayers.length === 0) {
+            console.log(`🧹 [${currentRoomCode}] Tous les joueurs déconnectés - cleanup timers`);
+            stopRoomTicker(currentRoomCode);
+            stopEventPoller(currentRoomCode);
+            // Optionnel: supprimer la room après 5 minutes d'inactivité
+            const roomCodeForCleanup = currentRoomCode;
+            setTimeout(() => {
+              const stillEmpty = roomManager.getRoom(roomCodeForCleanup);
+              if (stillEmpty) {
+                const stillConnected = Array.from(stillEmpty.players.values()).filter(p => p.isConnected);
+                if (stillConnected.length === 0) {
+                  console.log(`🗑️ [${roomCodeForCleanup}] Room inactive - suppression`);
+                  roomManager.deleteRoom(roomCodeForCleanup);
+                }
+              }
+            }, 5 * 60 * 1000); // 5 minutes
+          }
         } else {
           // Sinon supprimer
           room.players.delete(currentPlayer.id);
@@ -204,10 +251,10 @@ app.prepare().then(async () => {
             }
           }
         }
-        
+
         socket.to(currentRoomCode).emit('room:updated', roomManager.serializeRoom(room));
       }
-      
+
       socket.leave(currentRoomCode);
       currentRoomCode = null;
       currentPlayer = null;
@@ -236,8 +283,34 @@ app.prepare().then(async () => {
       if (!currentPlayer || !currentRoomCode) return;
       const room = roomManager.getRoom(currentRoomCode);
       if (!room) return;
-      
+
       roomManager.setPlayerReady(currentRoomCode, currentPlayer.id, ready);
+      io.to(currentRoomCode).emit('room:updated', roomManager.serializeRoom(room));
+    });
+
+    socket.on('room:update_config', (config: Partial<RoomConfig>) => {
+      if (!currentPlayer || !currentRoomCode) return;
+      if (currentPlayer.role !== 'host') return;
+
+      const room = roomManager.getRoom(currentRoomCode);
+      if (!room) return;
+
+      const mergedTimers = {
+        ...DEFAULT_ROOM_CONFIG.timers,
+        ...(room.config.timers || {}),
+        ...(config.timers || {}),
+      } as NonNullable<RoomConfig['timers']>;
+
+      room.config = {
+        ...room.config,
+        ...config,
+        teamNames: {
+          ...(room.config.teamNames || { A: 'Equipe A', B: 'Equipe B' }),
+          ...(config.teamNames || {}),
+        },
+        timers: mergedTimers,
+      };
+      room.gameState.totalRounds = room.config.totalRounds;
       io.to(currentRoomCode).emit('room:updated', roomManager.serializeRoom(room));
     });
 
@@ -314,23 +387,23 @@ app.prepare().then(async () => {
     // GAMEPLAY - ANSWERS
     // ==========================================
 
-    socket.on('game:submit_answer', (answer: string) => {
+    socket.on('game:submit_answer', async (answer: string) => {
       if (!currentPlayer || !currentRoomCode || !currentPlayer.team) return;
-      
+
       const room = roomManager.getRoom(currentRoomCode);
       if (!room) return;
-      
-      const result = roomManager.submitAnswer(currentRoomCode, currentPlayer.team, answer, currentPlayer.id);
+
+      const result = await roomManager.submitAnswer(currentRoomCode, currentPlayer.team, answer, currentPlayer.id);
       if (!result) return;
-      
+
       io.to(currentRoomCode).emit('game:answer_result', result);
-      
+
       // Traiter les événements en attente
       processPendingEvents(currentRoomCode);
-      
+
       // Send updated timer
       broadcastTimerSync(currentRoomCode, room);
-      
+
       // Check for KO
       if (result.newScore <= 0 || result.opponentScore <= 0) {
         handleKO(currentRoomCode, room);
@@ -380,6 +453,37 @@ app.prepare().then(async () => {
       if (room) {
         startRoomTicker(currentRoomCode, room);
       }
+    });
+
+    socket.on('game:skip', () => {
+      if (!currentPlayer || !currentRoomCode || !currentPlayer.team) return;
+      const room = roomManager.getRoom(currentRoomCode);
+      if (!room || room.gameState.phase !== 'playing') return;
+
+      const mode = room.gameState.currentMode;
+      if (!mode) return;
+
+      let canSkip = false;
+      if (mode === 'roland_gamos' || mode === 'le_theme' || mode === 'devine_qui' || mode === 'continue_paroles') {
+        canSkip = room.gameState.turn === currentPlayer.team;
+      } else if (mode === 'encheres') {
+        const data = room.gameState.currentData as EncheresData | undefined;
+        if (!data?.betState?.revealed) {
+          canSkip = true;
+        } else {
+          canSkip = data.betState.winner === currentPlayer.team;
+        }
+      } else if (mode === 'blind_test' || mode === 'pixel_cover' || mode === 'mytho_pas_mytho') {
+        canSkip = true;
+      }
+
+      if (!canSkip) return;
+
+      const skipped = roomManager.skipCurrentTurn(currentRoomCode, currentPlayer.team);
+      if (!skipped) return;
+
+      processPendingEvents(currentRoomCode);
+      broadcastTimerSync(currentRoomCode, room);
     });
 
     // ==========================================
@@ -545,6 +649,10 @@ app.prepare().then(async () => {
         case 'combo_update':
           io.to(roomCode).emit('game:combo_update', event.team, event.combo, event.multiplier);
           break;
+          
+        case 'notice':
+          io.to(roomCode).emit('game:notice', event.message, event.tone);
+          break;
 
         case 'room_update': {
           const room = roomManager.getRoom(roomCode);
@@ -654,14 +762,11 @@ app.prepare().then(async () => {
     io.to(roomCode).emit('shake', 1.0);
     
     // Check for actual KO
+    if (room.gameState.phase !== 'playing') return;
     if (room.teamA.score <= 0 || room.teamB.score <= 0) {
-      // End game
-      room.gameState.winner = room.teamA.score > room.teamB.score ? 'A' : 'B';
-      room.gameState.phase = 'final_score';
-      io.to(roomCode).emit('game:ended', room.gameState.winner,
-        { A: room.teamA.score, B: room.teamB.score },
-        room.gameState.roundResults
-      );
+      room.gameState.currentRound = room.config.totalRounds;
+      void roomManager.transitionPhase(room, 'round_result');
+      broadcastPhaseChange(roomCode, room);
     }
   }
 

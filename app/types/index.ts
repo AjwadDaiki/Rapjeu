@@ -1,5 +1,5 @@
 // ============================================
-// TYPES DU JEU RAP BATTLE - 6 MODES
+// TYPES DU JEU RAP BATTLE - 8 MODES
 // ============================================
 
 // ============================================
@@ -9,13 +9,26 @@
 export type Team = 'A' | 'B';
 export type PlayerRole = 'player' | 'spectator' | 'host';
 
-export type GameMode = 
-  | 'roland_gamos'   // Chain de featurings
-  | 'le_theme'       // Nommer X de catégorie Y
-  | 'mytho_pas_mytho' // Vrai/Faux
-  | 'encheres'       // Miser puis prouver
-  | 'blind_test'     // Audio + buzzer
-  | 'pixel_cover';   // Image floue
+export interface Theme {
+  id: string;
+  title: string;
+  description: string;
+  type: 'open_answer' | 'multiple_choice';
+  validAnswers: string[];
+  aliases: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  points: number;
+}
+
+export type GameMode =
+  | 'roland_gamos'      // Chain de featurings
+  | 'le_theme'          // Nommer X de catégorie Y
+  | 'mytho_pas_mytho'   // Vrai/Faux
+  | 'encheres'          // Miser puis prouver
+  | 'blind_test'        // Audio + buzzer
+  | 'pixel_cover'       // Image floue
+  | 'devine_qui'        // Devinettes avec indices Wordle-style
+  | 'continue_paroles'; // Continue les paroles
 
 export type GamePhase = 
   | 'lobby'
@@ -79,6 +92,22 @@ export interface RoomConfig {
   allowVeto: boolean;
   totalRounds: number;
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  modeSelection?: 'random' | 'manual';
+  teamNames?: {
+    A: string;
+    B: string;
+  };
+  timers?: {
+    rolandGamosTurnTime: number;
+    leThemeTurnTime: number;
+    mythoTime: number;
+    encheresBetTime: number;
+    encheresProofTime: number;
+    blindTestAnswerTime: number;
+    pixelCoverTime: number;
+    devineQuiTime: number;
+    continueParolesTime: number;
+  };
 }
 
 // ============================================
@@ -101,6 +130,8 @@ export interface RolandGamosData {
   currentArtistName: string;
   chain: ChainLink[];
   usedArtists: string[];
+  noAnswerStreak: number;
+  maxChain: number;
 }
 
 // --- Le Theme (ex-Roland Gamos simple) ---
@@ -111,6 +142,8 @@ export interface LeThemeData {
   validAnswers: string[];
   aliases: Record<string, string[]>;
   usedAnswers: string[];
+  noAnswerStreak: number;
+  maxAnswers: number;
 }
 
 // --- Mytho/Pas Mytho ---
@@ -145,6 +178,9 @@ export interface EncheresData {
   betState: BetState;
   currentCount: number;
   usedAnswers: string[];
+  responderOrder?: string[];
+  currentResponderId?: string | null;
+  currentResponderIndex?: number;
 }
 
 // --- Blind Test ---
@@ -152,6 +188,19 @@ export interface BuzzState {
   buzzedTeam: Team | null;
   buzzedAt: number;
   audioPosition: number;
+}
+
+export interface BlindTestAnswer {
+  artist?: string;  // Nom de l'artiste (1 point)
+  track?: string;   // Nom du morceau (1 point)
+}
+
+export interface BlindTestResult {
+  artistCorrect: boolean;
+  trackCorrect: boolean;
+  pointsEarned: number; // 0, 1 ou 2
+  correctArtist: string;
+  correctTrack: string;
 }
 
 export interface BlindTestData {
@@ -165,6 +214,7 @@ export interface BlindTestData {
   }[];
   currentIndex: number;
   buzzState: BuzzState;
+  noAnswerStreak?: number;
 }
 
 // --- Pixel Cover ---
@@ -186,15 +236,74 @@ export interface PixelCoverData {
   }[];
   currentIndex: number;
   pixelState: PixelState;
+  noAnswerStreak?: number;
 }
 
-export type ModeData = 
-  | RolandGamosData 
-  | LeThemeData 
-  | MythoPasMythoData 
-  | EncheresData 
-  | BlindTestData 
-  | PixelCoverData;
+// --- Devine Qui ---
+export type ClueStatus = 'pending' | 'correct' | 'close' | 'wrong';
+
+export interface RapperClues {
+  albums: number;        // Nombre d'albums
+  streams: number;       // Nombre de streams (en millions)
+  letters: number;       // Nombre de lettres dans le pseudo
+  yearDebut: number;     // Année de début de carrière
+  origin: string;        // Ville/Pays d'origine
+}
+
+export interface DevineQuiAttempt {
+  team: Team;
+  artistName: string;
+  clues?: RapperClues;
+  cluesStatus: {
+    albums: ClueStatus;
+    streams: ClueStatus;
+    letters: ClueStatus;
+    yearDebut: ClueStatus;
+    origin: ClueStatus;
+  };
+  attemptNumber: number;
+}
+
+export interface DevineQuiData {
+  type: 'devine_qui';
+  targetArtist: {
+    id: string;
+    name: string;
+    clues: RapperClues;
+  };
+  attempts: DevineQuiAttempt[];
+  currentTurn: Team;
+  maxAttempts: number;
+  foundBy: Team | null;
+}
+
+// --- Continue les paroles ---
+export interface LyricsSnippet {
+  prompt: string;      // La ligne affichée (début des paroles)
+  answer: string;      // La ligne que le joueur doit trouver (suite)
+  artistName: string;
+  trackTitle: string;
+}
+
+export interface ContinueParolesData {
+  type: 'continue_paroles';
+  snippets: LyricsSnippet[];
+  currentIndex: number;
+  currentTurn: Team;
+  revealed: boolean;     // La réponse a été révélée
+  teamAAnswers: (boolean | null)[];  // true = correct, false = wrong, null = pas encore
+  teamBAnswers: (boolean | null)[];
+}
+
+export type ModeData =
+  | RolandGamosData
+  | LeThemeData
+  | MythoPasMythoData
+  | EncheresData
+  | BlindTestData
+  | PixelCoverData
+  | DevineQuiData
+  | ContinueParolesData;
 
 // ============================================
 // ÉTAT DU JEU
@@ -220,6 +329,11 @@ export interface GameState {
   turn: Team | null;
   winner: Team | null;
   roundResults: RoundResult[];
+  roundDamage: {
+    A: number;
+    B: number;
+    cap: number;
+  };
   
   // Timer
   timerEndsAt: number | null;
@@ -349,6 +463,7 @@ export interface ServerToClientEvents {
   'game:proof_phase_started': (targetCount: number, duration: number) => void;
   'game:buzz_result': (team: Team | null, timeLeft: number) => void;
   'game:pixel_blur_update': (blur: number, progress: number) => void;
+  'game:notice': (message: string, tone?: 'info' | 'warning' | 'error') => void;
   
   // Input
   'input:sync': (team: Team, value: string) => void;
@@ -383,6 +498,7 @@ export interface ClientToServerEvents {
   'game:start': () => void;
   'game:request_revanche': () => void;
   'game:select_mode': (mode: string) => void;
+  'game:skip': () => void;
   
   // Mode specific answers
   'game:submit_answer': (answer: string) => void;

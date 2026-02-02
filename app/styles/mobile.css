@@ -1,0 +1,438 @@
+/* ============================================
+   MOBILE RESPONSIVE - PORTRAIT MODE
+   Optimisé pour téléphones (320px - 768px)
+   ============================================ */
+
+/* Base mobile-first */
+@media screen and (max-width: 768px) {
+  /* Body & Layout */
+  body {
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  /* Container principal */
+  .game-container {
+    padding: 8px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ==========================================
+     HP BARS - Vertical Stack
+     ========================================== */
+  .hp-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .hp-bar {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hp-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .hp-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+  }
+
+  /* Team A (Bleu) */
+  .hp-bar.team-a {
+    background: linear-gradient(90deg, #22D3EE, #0EA5E9);
+  }
+
+  /* Team B (Jaune) */
+  .hp-bar.team-b {
+    background: linear-gradient(90deg, #D97706, #F59E0B);
+  }
+
+  /* ==========================================
+     GAME AREA - Centré, grande taille
+     ========================================== */
+  .game-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  /* Timer */
+  .timer {
+    font-size: 48px;
+    font-weight: bold;
+    color: #FBBF24;
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+    margin-bottom: 8px;
+  }
+
+  .timer.warning {
+    color: #EF4444;
+    animation: pulse-red 0.5s infinite;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  /* Question */
+  .question-text {
+    font-size: 22px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Description */
+  .question-description {
+    font-size: 14px;
+    color: #D1D5DB;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  /* ==========================================
+     INPUT & BUTTONS - Touch-friendly
+     ========================================== */
+  .input-field {
+    width: 100%;
+    height: 56px; /* 44px minimum pour touch */
+    font-size: 18px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 3px solid #FBBF24;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .input-field:focus {
+    border-color: #22D3EE;
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
+    transform: scale(1.02);
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    height: 56px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    color: black;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+  }
+
+  .submit-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Buzzer (Blind Test) */
+  .buzzer-btn {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    font-size: 48px;
+    border: 6px solid #EF4444;
+    background: linear-gradient(135deg, #DC2626, #EF4444);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.6);
+    transition: all 0.1s;
+  }
+
+  .buzzer-btn:active {
+    transform: scale(0.9);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  }
+
+  /* ==========================================
+     MODES SPÉCIAUX
+     ========================================== */
+
+  /* Mytho/Pas Mytho - Buttons side by side */
+  .mytho-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .mytho-btn {
+    flex: 1;
+    height: 64px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mytho-btn.vrai {
+    background: linear-gradient(135deg, #10B981, #34D399);
+    color: white;
+  }
+
+  .mytho-btn.faux {
+    background: linear-gradient(135deg, #EF4444, #F87171);
+    color: white;
+  }
+
+  .mytho-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Pixel Cover - Image carrée */
+  .pixel-cover-image {
+    width: 280px;
+    height: 280px;
+    border-radius: 16px;
+    object-fit: cover;
+    border: 4px solid #FBBF24;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* ==========================================
+     ANIMATIONS & FEEDBACK
+     ========================================== */
+
+  /* Success flash */
+  @keyframes flash-success {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(16, 185, 129, 0.3); }
+    100% { background-color: transparent; }
+  }
+
+  .success-flash {
+    animation: flash-success 0.5s ease;
+  }
+
+  /* Error shake */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+
+  .error-shake {
+    animation: shake 0.3s ease;
+  }
+
+  /* Combo pop */
+  .combo-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 64px;
+    font-weight: bold;
+    color: #FBBF24;
+    text-shadow: 0 0 40px rgba(251, 191, 36, 1);
+    pointer-events: none;
+    z-index: 100;
+    animation: combo-pop 0.8s ease;
+  }
+
+  @keyframes combo-pop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  }
+
+  /* ==========================================
+     LOBBY & RESULT SCREENS
+     ========================================== */
+
+  .lobby-container,
+  .result-container {
+    padding: 24px 16px;
+    text-align: center;
+  }
+
+  .lobby-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 24px;
+  }
+
+  .player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .player-card {
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Start button */
+  .start-btn {
+    width: 100%;
+    height: 64px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    color: black;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.5);
+    transition: all 0.2s;
+  }
+
+  .start-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* ==========================================
+     ROULETTE MODE
+     ========================================== */
+
+  .mode-roulette {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .mode-icon {
+    font-size: 80px;
+    margin-bottom: 16px;
+  }
+
+  .mode-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #FBBF24;
+  }
+
+  /* ==========================================
+     VS INTRO SCREEN
+     ========================================== */
+
+  .vs-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    gap: 24px;
+  }
+
+  .vs-team {
+    font-size: 36px;
+    font-weight: bold;
+  }
+
+  .vs-team.team-a {
+    color: #0EA5E9;
+    text-shadow: 0 0 20px rgba(34, 211, 238, 0.8);
+  }
+
+  .vs-team.team-b {
+    color: #F59E0B;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+  }
+
+  .vs-text {
+    font-size: 64px;
+    font-weight: bold;
+    color: #EF4444;
+    text-shadow: 0 0 40px rgba(239, 68, 68, 1);
+  }
+
+  /* ==========================================
+     UTILITIES
+     ========================================== */
+
+  /* Hide on mobile */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Center text */
+  .text-center {
+    text-align: center;
+  }
+
+  /* Prevent text selection during gameplay */
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+  }
+
+  /* Touch optimization */
+  button,
+  input {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ============================================
+   LANDSCAPE MODE (Optional)
+   Pour téléphones en mode paysage
+   ============================================ */
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .hp-section {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .hp-bar {
+    width: 48%;
+  }
+
+  .game-area {
+    padding: 8px 24px;
+  }
+
+  .question-text {
+    font-size: 18px;
+  }
+
+  .pixel-cover-image {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+

@@ -106,6 +106,10 @@ export function RolandGamosMode({
         </div>
       )}
 
+      <p className="text-center text-sm text-gray-400 mb-6 max-w-xl">
+        Chacun son tour. Donne un rappeur qui a un feat avec <span className="text-purple-300 font-semibold">{data.currentArtistName}</span>.
+      </p>
+
       {/* Input Area */}
       {isMyTurn ? (
         <form onSubmit={handleSubmit} className="w-full max-w-md">

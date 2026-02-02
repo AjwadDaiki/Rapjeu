@@ -1,19 +1,21 @@
 // ============================================
 // GAME DATA SERVICE
-// Préchargement et cache des données API
+// Utilise MongoDB pour récupérer les données
 // ============================================
 
 import { Track, Album } from './api/types';
-import { getBlindTestTracks, getPixelCoverItems } from './api';
+import * as mongo from './mongoService';
 
-// Pools de données préchargées
+// Pools de données en cache (optionnel, pour performance)
 let blindTestPool: Track[] = [];
 let pixelCoverPool: Album[] = [];
 let lastFetchTime = 0;
 const POOL_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 heure
+const MONGO_POOL_LIMIT = Number.parseInt(process.env.MONGO_POOL_LIMIT || '0', 10);
+const MONGO_POOL_SIZE = Number.isFinite(MONGO_POOL_LIMIT) ? MONGO_POOL_LIMIT : 0;
 
 // ============================================
-// PRÉCHARGEMENT
+// PRÉCHARGEMENT (optionnel)
 // ============================================
 
 export async function preloadGameData(): Promise<void> {
@@ -22,23 +24,39 @@ export async function preloadGameData(): Promise<void> {
     return; // Cache encore valide
   }
 
-  console.log('🎵 Préchargement des données API...');
+  console.log('🎵 Préchargement des données MongoDB...');
 
   // Blind Test tracks
   try {
-    blindTestPool = await getBlindTestTracks(50); // Pool de 50 tracks
-    console.log(`✅ ${blindTestPool.length} tracks préchargés`);
+    const mongoTracks = await mongo.getRandomTracks(MONGO_POOL_SIZE);
+    blindTestPool = mongoTracks.map(t => ({
+      id: t.spotifyId,
+      name: t.title,
+      artistName: t.artistName,
+      albumName: t.albumName,
+      previewUrl: t.previewUrl || null,
+      coverUrl: null,
+      duration: t.durationMs,
+    }));
+    console.log(`✅ ${blindTestPool.length} tracks préchargés depuis MongoDB`);
   } catch (e) {
-    console.error('❌ Erreur préchargement tracks:', e);
+    console.error('❌ Erreur préchargement tracks MongoDB:', e);
     blindTestPool = getFallbackTracks();
   }
 
   // Pixel Cover albums
   try {
-    pixelCoverPool = await getPixelCoverItems(50); // Pool de 50 albums
-    console.log(`✅ ${pixelCoverPool.length} albums préchargés`);
+    const mongoAlbums = await mongo.getRandomAlbums(MONGO_POOL_SIZE);
+    pixelCoverPool = mongoAlbums.map(a => ({
+      id: a.spotifyId,
+      name: a.title,
+      artistName: a.artistName,
+      coverUrl: a.coverUrl || null,
+      year: a.year,
+    }));
+    console.log(`✅ ${pixelCoverPool.length} albums préchargés depuis MongoDB`);
   } catch (e) {
-    console.error('❌ Erreur préchargement albums:', e);
+    console.error('❌ Erreur préchargement albums MongoDB:', e);
     pixelCoverPool = getFallbackAlbums();
   }
 
@@ -49,20 +67,48 @@ export async function preloadGameData(): Promise<void> {
 // RÉCUPÉRATION
 // ============================================
 
-export function getRandomTracks(count: number): Track[] {
+export async function getRandomTracks(count: number): Promise<Track[]> {
+  // Si cache vide, récupérer depuis MongoDB directement
   if (blindTestPool.length === 0) {
-    return getFallbackTracks().slice(0, count);
+    try {
+      const mongoTracks = await mongo.getRandomTracks(count);
+      return mongoTracks.map(t => ({
+        id: t.spotifyId,
+        name: t.title,
+        artistName: t.artistName,
+        albumName: t.albumName,
+        previewUrl: t.previewUrl || null,
+        coverUrl: null,
+        duration: t.durationMs,
+      }));
+    } catch (e) {
+      console.error('❌ Erreur MongoDB getRandomTracks:', e);
+      return getFallbackTracks().slice(0, count);
+    }
   }
-  
+
   const shuffled = [...blindTestPool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
 
-export function getRandomAlbums(count: number): Album[] {
+export async function getRandomAlbums(count: number): Promise<Album[]> {
+  // Si cache vide, récupérer depuis MongoDB directement
   if (pixelCoverPool.length === 0) {
-    return getFallbackAlbums().slice(0, count);
+    try {
+      const mongoAlbums = await mongo.getRandomAlbums(count);
+      return mongoAlbums.map(a => ({
+        id: a.spotifyId,
+        name: a.title,
+        artistName: a.artistName,
+        coverUrl: a.coverUrl || null,
+        year: a.year,
+      }));
+    } catch (e) {
+      console.error('❌ Erreur MongoDB getRandomAlbums:', e);
+      return getFallbackAlbums().slice(0, count);
+    }
   }
-  
+
   const shuffled = [...pixelCoverPool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }

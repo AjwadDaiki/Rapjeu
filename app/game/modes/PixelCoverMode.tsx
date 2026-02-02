@@ -9,6 +9,7 @@ interface PixelCoverModeProps {
   onSubmitAnswer: (answer: string) => void;
   timeLeft: number;
   totalTime: number;
+  lastResult?: { correct: boolean; answer?: string } | null;
 }
 
 export function PixelCoverMode({
@@ -16,6 +17,7 @@ export function PixelCoverMode({
   onSubmitAnswer,
   timeLeft,
   totalTime,
+  lastResult,
 }: PixelCoverModeProps) {
   const [answer, setAnswer] = useState('');
   const [hasAnswered, setHasAnswered] = useState(false);
@@ -88,11 +90,37 @@ export function PixelCoverMode({
         </form>
       ) : (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-green-400 font-bold text-xl"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
         >
-          Réponse enregistrée !
+          {lastResult ? (
+            <div className={`px-6 py-4 rounded-2xl border-2 ${
+              lastResult.correct
+                ? 'bg-green-900/40 border-green-500/60'
+                : 'bg-red-900/40 border-red-500/60'
+            }`}>
+              <div className="text-2xl font-bold mb-1">
+                {lastResult.correct ? '\u2705 BONNE R\u00c9PONSE !' : '\u274c MAUVAISE R\u00c9PONSE'}
+              </div>
+              {lastResult.answer && !lastResult.correct && (
+                <div className="text-sm text-gray-300">
+                  {'C\'\u00e9tait : '}<span className="font-bold text-white">{lastResult.answer}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-yellow-400 font-bold text-xl">
+              {'\u2705 R\u00e9ponse enregistr\u00e9e !'}
+              <motion.p
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-gray-400 text-sm mt-2 font-normal"
+              >
+                En attente du r{'\u00e9'}sultat...
+              </motion.p>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -111,8 +139,8 @@ export function PixelCoverMode({
       </div>
 
       {/* Hint */}
-      <p className="mt-4 text-sm text-gray-500 text-center">
-        L'image devient de plus en plus nette avec le temps...
+      <p className="mt-4 text-sm text-gray-500 text-center max-w-md">
+        Tout le monde peut répondre. Donne l'artiste ou l'album avant que l'image soit claire.
       </p>
     </div>
   );

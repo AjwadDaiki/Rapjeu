@@ -1,0 +1,549 @@
+/* ============================================
+   RAPJEU - DIRECTION ARTISTIQUE COMPLÈTE
+   Style: Street/Urban/Hip-Hop moderne
+   ============================================ */
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600;700;900&family=Russo+One&display=swap');
+
+:root {
+  /* Couleurs principales */
+  --rapjeu-primary: #FF0054;
+  --rapjeu-secondary: #00D9FF;
+  --rapjeu-accent: #FFD700;
+  --rapjeu-dark: #0A0A0F;
+  --rapjeu-dark-2: #1A1A2E;
+  --rapjeu-purple: #9D4EDD;
+
+  /* Gradients */
+  --gradient-fire: linear-gradient(135deg, #FF0054 0%, #FF6B35 100%);
+  --gradient-ice: linear-gradient(135deg, #00D9FF 0%, #0066FF 100%);
+  --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  --gradient-purple: linear-gradient(135deg, #9D4EDD 0%, #5A189A 100%);
+  --gradient-dark: linear-gradient(180deg, #0A0A0F 0%, #1A1A2E 100%);
+
+  /* Fonts */
+  --font-title: 'Bebas Neue', cursive;
+  --font-body: 'Poppins', sans-serif;
+  --font-impact: 'Russo One', sans-serif;
+}
+
+/* ==========================================
+   BACKGROUND ANIMÉ
+   ========================================== */
+.rapjeu-container {
+  position: relative;
+  min-height: 100vh;
+  background: var(--rapjeu-dark);
+  overflow: hidden;
+}
+
+/* Background layers animés */
+.rapjeu-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 0, 84, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(0, 217, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
+  animation: bg-pulse 15s ease-in-out infinite;
+}
+
+@keyframes bg-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Grid pattern overlay */
+.rapjeu-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: grid-move 30s linear infinite;
+}
+
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+/* Floating particles */
+.rapjeu-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--rapjeu-accent);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float-particle 20s infinite;
+}
+
+@keyframes float-particle {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100px) translateX(100px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ==========================================
+   TYPOGRAPHY
+   ========================================== */
+.rapjeu-title {
+  font-family: var(--font-impact);
+  font-size: clamp(48px, 8vw, 120px);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--gradient-fire);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  line-height: 1;
+  text-shadow: 0 0 80px rgba(255, 0, 84, 0.5);
+  filter: drop-shadow(0 4px 20px rgba(255, 0, 84, 0.4));
+}
+
+.rapjeu-title::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: var(--gradient-ice);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: translate(-3px, 3px);
+  opacity: 0.5;
+}
+
+.rapjeu-subtitle {
+  font-family: var(--font-title);
+  font-size: clamp(24px, 4vw, 48px);
+  letter-spacing: 0.1em;
+  color: var(--rapjeu-accent);
+  text-transform: uppercase;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+.rapjeu-text {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  color: #FFFFFF;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+.rapjeu-btn {
+  position: relative;
+  font-family: var(--font-title);
+  font-size: 24px;
+  letter-spacing: 0.05em;
+  padding: 20px 50px;
+  border: none;
+  border-radius: 0;
+  background: var(--gradient-fire);
+  color: #FFF;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 0 0 2px var(--rapjeu-dark),
+    0 0 0 4px var(--rapjeu-primary),
+    0 10px 30px rgba(255, 0, 84, 0.4);
+}
+
+.rapjeu-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.rapjeu-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow:
+    0 0 0 2px var(--rapjeu-dark),
+    0 0 0 4px var(--rapjeu-primary),
+    0 15px 40px rgba(255, 0, 84, 0.6),
+    0 0 60px rgba(255, 0, 84, 0.4);
+}
+
+.rapjeu-btn:hover::before {
+  left: 100%;
+}
+
+.rapjeu-btn:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Button variants */
+.rapjeu-btn-ice {
+  background: var(--gradient-ice);
+  box-shadow:
+    0 0 0 2px var(--rapjeu-dark),
+    0 0 0 4px var(--rapjeu-secondary),
+    0 10px 30px rgba(0, 217, 255, 0.4);
+}
+
+.rapjeu-btn-ice:hover {
+  box-shadow:
+    0 0 0 2px var(--rapjeu-dark),
+    0 0 0 4px var(--rapjeu-secondary),
+    0 15px 40px rgba(0, 217, 255, 0.6),
+    0 0 60px rgba(0, 217, 255, 0.4);
+}
+
+.rapjeu-btn-gold {
+  background: var(--gradient-gold);
+  color: #000;
+  box-shadow:
+    0 0 0 2px var(--rapjeu-dark),
+    0 0 0 4px var(--rapjeu-accent),
+    0 10px 30px rgba(255, 215, 0, 0.4);
+}
+
+.rapjeu-btn-gold:hover {
+  box-shadow:
+    0 0 0 2px var(--rapjeu-dark),
+    0 0 0 4px var(--rapjeu-accent),
+    0 15px 40px rgba(255, 215, 0, 0.6),
+    0 0 60px rgba(255, 215, 0, 0.4);
+}
+
+/* ==========================================
+   CARDS
+   ========================================== */
+.rapjeu-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(10, 10, 15, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rapjeu-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-fire);
+}
+
+.rapjeu-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 0, 84, 0.5);
+  box-shadow: 0 20px 60px rgba(255, 0, 84, 0.3);
+}
+
+/* Card variants */
+.rapjeu-card-ice::before {
+  background: var(--gradient-ice);
+}
+
+.rapjeu-card-ice:hover {
+  border-color: rgba(0, 217, 255, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 217, 255, 0.3);
+}
+
+/* ==========================================
+   ROOM CODE
+   ========================================== */
+.rapjeu-code {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 40px;
+  background: linear-gradient(135deg, rgba(157, 78, 221, 0.2) 0%, rgba(90, 24, 154, 0.3) 100%);
+  backdrop-filter: blur(10px);
+  border: 3px solid var(--rapjeu-purple);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.rapjeu-code::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-purple);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.rapjeu-code:hover::before {
+  opacity: 0.2;
+}
+
+.rapjeu-code:hover {
+  transform: scale(1.05);
+  border-color: var(--rapjeu-accent);
+  box-shadow: 0 10px 40px rgba(157, 78, 221, 0.4);
+}
+
+.rapjeu-code-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: #AAA;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.rapjeu-code-value {
+  font-family: var(--font-impact);
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rapjeu-code-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+}
+
+/* ==========================================
+   PLAYER CARD
+   ========================================== */
+.rapjeu-player {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: linear-gradient(90deg, rgba(26, 26, 46, 0.6) 0%, rgba(10, 10, 15, 0.8) 100%);
+  backdrop-filter: blur(5px);
+  border-left: 4px solid var(--rapjeu-primary);
+  border-radius: 10px;
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.rapjeu-player::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-fire);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.rapjeu-player:hover::before {
+  opacity: 0.1;
+}
+
+.rapjeu-player:hover {
+  transform: translateX(10px);
+  border-left-width: 8px;
+  box-shadow: 0 5px 20px rgba(255, 0, 84, 0.3);
+}
+
+.rapjeu-player-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-fire);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255, 0, 84, 0.5);
+}
+
+.rapjeu-player-info {
+  flex: 1;
+}
+
+.rapjeu-player-name {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.rapjeu-player-team {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+/* Team B variant */
+.rapjeu-player-ice {
+  border-left-color: var(--rapjeu-secondary);
+}
+
+.rapjeu-player-ice::before {
+  background: var(--gradient-ice);
+}
+
+.rapjeu-player-ice:hover {
+  box-shadow: 0 5px 20px rgba(0, 217, 255, 0.3);
+}
+
+.rapjeu-player-ice .rapjeu-player-avatar {
+  background: var(--gradient-ice);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+}
+
+/* ==========================================
+   MODE TOGGLE
+   ========================================== */
+.rapjeu-mode-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: rgba(26, 26, 46, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.rapjeu-mode-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-fire);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.rapjeu-mode-toggle.active {
+  background: linear-gradient(90deg, rgba(255, 0, 84, 0.2) 0%, rgba(255, 107, 53, 0.2) 100%);
+  border-color: var(--rapjeu-primary);
+}
+
+.rapjeu-mode-toggle.active::before {
+  opacity: 0.1;
+}
+
+.rapjeu-mode-toggle:hover {
+  transform: translateX(5px);
+  border-color: var(--rapjeu-accent);
+}
+
+.rapjeu-mode-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+}
+
+.rapjeu-mode-name {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFF;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 40px currentColor);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 768px) {
+  .rapjeu-title {
+    font-size: 48px;
+  }
+
+  .rapjeu-subtitle {
+    font-size: 24px;
+  }
+
+  .rapjeu-btn {
+    font-size: 18px;
+    padding: 15px 35px;
+  }
+
+  .rapjeu-code-value {
+    font-size: 32px;
+  }
+}

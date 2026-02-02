@@ -14,6 +14,7 @@ interface TeamSlotProps {
   maxPlayers?: number;
   isHost: boolean;
   currentPlayerId: string;
+  label?: string;
   onMovePlayer: (playerId: string, team: Team | null) => void;
   onKickPlayer?: (playerId: string) => void;
 }
@@ -24,11 +25,16 @@ export function TeamSlot({
   maxPlayers = 4, 
   isHost, 
   currentPlayerId,
+  label,
   onMovePlayer,
 }: TeamSlotProps) {
   const isFull = players.length >= maxPlayers;
   const teamColor = team ? getTeamColor(team) : '#6B7280';
-  const teamName = team === 'A' ? 'ÉQUIPE A' : team === 'B' ? 'ÉQUIPE B' : 'SPECTATEURS';
+  const teamName = team === 'A'
+    ? (label || 'ÉQUIPE A')
+    : team === 'B'
+      ? (label || 'ÉQUIPE B')
+      : 'SPECTATEURS';
 
   return (
     <div 
@@ -40,7 +46,7 @@ export function TeamSlot({
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-display font-bold uppercase tracking-wider" style={{ color: teamColor }}>
+        <h3 className="text-xl md:text-2xl font-display font-extrabold uppercase tracking-[0.22em] leading-none" style={{ color: teamColor }}>
           {teamName}
         </h3>
         <span className="chip text-gray-200">
@@ -87,7 +93,7 @@ export function TeamSlot({
                       <span className="text-xs text-gray-400 ml-2">(Vous)</span>
                     )}
                     {player.role === 'host' && (
-                      <span className="text-xs text-yellow-400 ml-2">👑 Host</span>
+                      <span className="text-xs ml-2" style={{ color: 'var(--rj-accent)' }}>👑 Host</span>
                     )}
                   </span>
 
@@ -111,7 +117,7 @@ export function TeamSlot({
                             e.stopPropagation();
                             onMovePlayer(player.id, 'A');
                           }}
-                          className="w-6 h-6 rounded bg-cyan-500 text-xs hover:bg-cyan-400 text-black"
+                          className="w-6 h-6 rounded text-xs text-[#0f1115]" style={{ background: 'var(--rj-secondary)' }}
                         >
                           A
                         </button>
@@ -122,7 +128,7 @@ export function TeamSlot({
                             e.stopPropagation();
                             onMovePlayer(player.id, 'B');
                           }}
-                          className="w-6 h-6 rounded bg-amber-400 text-xs hover:bg-amber-300 text-black"
+                          className="w-6 h-6 rounded text-xs text-[#0f1115]" style={{ background: 'var(--rj-primary)' }}
                         >
                           B
                         </button>

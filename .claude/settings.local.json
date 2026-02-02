@@ -1,7 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(npm install:*)",
+      "Bash(mongosh:*)",
+      "Bash(npm run crawl:improved:*)",
+      "Bash(node -e:*)",
+      "Bash(node scripts/clear-db.js:*)",
+      "Bash(node scripts/test-blind-test.js:*)",
+      "Bash(node scripts/fix-preview-urls.js:*)",
+      "Bash(test:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(wc:*)",
+      "Bash(copy:*)",
+      "Bash(npx next build)",
+      "Bash(npx next build:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell -NoProfile -Command:*)",
+      "Bash(git -C \"c:\\\\Users\\\\Daiki\\\\Desktop\\\\Rapjeu-master\" status)",
+      "Bash(unzip:*)"
     ]
   }
 }

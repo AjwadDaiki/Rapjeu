@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Bebas_Neue } from "next/font/google";
+import { Geist, Geist_Mono, Sora, Space_Grotesk, Unbounded, Archivo_Black } from "next/font/google";
 import "./globals.css";
+import "./styles/gta-sa.css";
+import "./styles/rapjeu-modern.css";
 import { GameProvider } from "./hooks/useGameContext";
+import { SocketProvider } from "./hooks/useSocket";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,15 +16,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const displayFont = Bebas_Neue({
-  variable: "--font-display",
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space",
+  subsets: ["latin"],
+});
+
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
+  subsets: ["latin"],
+});
+
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo",
   subsets: ["latin"],
   weight: "400",
 });
 
 export const metadata: Metadata = {
-  title: "Rap Battle Online - Quiz Multijoueur",
-  description: "Le jeu de quiz rap multijoueur en temps réel. Affrontez vos amis dans des modes de jeu explosifs !",
+  title: "RAPJEU - Quiz Rap Battle Multijoueur",
+  description: "Le jeu de quiz rap multijoueur en temps reel. Affrontez vos amis dans des modes de jeu explosifs !",
 };
 
 export default function RootLayout({
@@ -32,11 +50,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} antialiased bg-gray-900`}
+        className={`${geistSans.variable} ${geistMono.variable} ${sora.variable} ${spaceGrotesk.variable} ${unbounded.variable} ${archivoBlack.variable} antialiased`}
       >
-        <GameProvider>
-          {children}
-        </GameProvider>
+        <SocketProvider>
+          <GameProvider>
+            {children}
+          </GameProvider>
+        </SocketProvider>
       </body>
     </html>
   );

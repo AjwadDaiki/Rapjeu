@@ -1,11 +1,13 @@
 'use client';
 
 // ============================================
-// HP BAR - Barre de vie style Versus Fighting
+// HP BAR - Rapjeu Street Arena
+// Bold, readable, no neon glow
 // ============================================
 
-import { motion } from 'framer-motion';
-import { getTeamColor } from '../lib/utils';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getTeamColor, getTeamGradient } from '../lib/designSystem';
 import type { Team } from '../types';
 
 interface HPBarProps {
@@ -14,103 +16,177 @@ interface HPBarProps {
   maxHp?: number;
   isActive?: boolean;
   label?: string;
+  showDamageFlash?: boolean;
 }
 
-export function HPBar({ team, hp, maxHp = 100, isActive = false, label }: HPBarProps) {
+export function HPBar({
+  team,
+  hp,
+  maxHp = 100,
+  isActive = false,
+  label,
+  showDamageFlash = false,
+}: HPBarProps) {
+  const [damagePopup, setDamagePopup] = useState<{ amount: number; id: number } | null>(null);
+  const prevHpRef = useRef(hp);
+
+  // Detect HP changes and show floating damage number
+  useEffect(() => {
+    const diff = prevHpRef.current - hp;
+    prevHpRef.current = hp;
+    if (diff > 0) {
+      setDamagePopup({ amount: diff, id: Date.now() });
+      const timer = setTimeout(() => setDamagePopup(null), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [hp]);
   const percentage = Math.max(0, Math.min(100, (hp / maxHp) * 100));
   const isLow = percentage <= 25;
   const isCritical = percentage <= 10;
 
-  // Couleurs dynamiques
-  const primaryColor = getTeamColor(team);
-  const bgColor = team === 'A' ? 'bg-cyan-950/40' : 'bg-amber-950/40';
-  
+  const primaryColor = getTeamColor(team, 'primary');
+  const gradient = getTeamGradient(team);
+
   return (
     <div className="relative w-full">
-      {/* Label */}
       {label && (
-        <div className="flex justify-between items-center mb-1">
-          <span className={`text-sm font-display font-bold uppercase tracking-wider ${
-            team === 'A' ? 'text-blue-400' : 'text-yellow-400'
-          }`}>
+        <div className="flex justify-between items-center mb-2">
+          <motion.span
+            className="text-sm md:text-base font-extrabold uppercase tracking-[0.32em]"
+            style={{
+              color: primaryColor,
+              textShadow: '0 4px 10px rgba(6, 8, 12, 0.35)',
+            }}
+            animate={isActive ? { opacity: [1, 0.75, 1] } : {}}
+            transition={{ duration: 1, repeat: Infinity }}
+          >
             {label}
-          </span>
-          <span className={`text-lg font-mono font-bold ${
-            isCritical ? 'text-red-500 animate-pulse' : 'text-white'
-          }`}>
-            {Math.round(hp)} HP
-          </span>
+          </motion.span>
+
+          <div className="flex items-center gap-2">
+            <motion.span
+              className="text-2xl font-bold font-mono tabular-nums"
+              style={{
+                color: isCritical ? '#EF4444' : '#F6F2EA',
+                textShadow: '0 4px 10px rgba(6, 8, 12, 0.35)',
+              }}
+              animate={isCritical ? { scale: [1, 1.08, 1] } : {}}
+              transition={{ duration: 0.5, repeat: Infinity }}
+            >
+              {Math.round(hp)}
+            </motion.span>
+            <span className="text-xs text-gray-400 uppercase">HP</span>
+          </div>
         </div>
       )}
 
-      {/* Container */}
-      <div className={`relative h-9 ${bgColor} rounded-xl overflow-hidden border ${
-        isActive ? 'border-white/70 shadow-lg shadow-white/20' : 'border-white/10'
-      } hud-panel`}>
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="w-full h-full bg-[linear-gradient(90deg,transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:20px_100%]" />
-        </div>
-
-        {/* HP Fill */}
-        <motion.div
-          className={`absolute inset-y-0 left-0 ${
-            isCritical 
-              ? 'bg-red-600' 
-              : isLow 
-                ? 'bg-orange-500' 
-                : ''
-          }`}
-          style={{ backgroundColor: isCritical || isLow ? undefined : primaryColor }}
-          initial={{ width: `${percentage}%` }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ 
-            type: 'spring', 
-            stiffness: 100, 
-            damping: 15,
-            duration: 0.5 
+      <div
+        className="relative h-10 rounded-xl overflow-hidden"
+        style={{
+          background: 'rgba(15, 17, 21, 0.75)',
+          border: `2px solid ${primaryColor}`,
+          boxShadow: '0 14px 28px rgba(6, 8, 12, 0.35)',
+        }}
+      >
+        {/* Subtle diagonal texture */}
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: 'linear-gradient(135deg, rgba(246,242,234,0.4) 0%, transparent 40%, transparent 60%, rgba(246,242,234,0.4) 100%)',
+            backgroundSize: '18px 18px',
           }}
-        >
-          {/* Shine effect */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent" />
-          
-          {/* Pulse effect on low HP */}
-          {isLow && (
-            <motion.div
-              className="absolute inset-0 bg-white"
-              animate={{ opacity: [0, 0.3, 0] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
-            />
-          )}
-        </motion.div>
+        />
 
-        {/* Segments markers */}
-        <div className="absolute inset-0 flex">
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: isCritical
+              ? 'linear-gradient(90deg, #EF4444 0%, #DC2626 100%)'
+              : isLow
+                ? 'linear-gradient(90deg, #F2C14E 0%, #F08C3A 100%)'
+                : gradient,
+          }}
+          initial={{ width: '100%' }}
+          animate={{
+            width: `${percentage}%`,
+            opacity: isLow ? [1, 0.85, 1] : 1,
+          }}
+          transition={{
+            width: { type: 'spring', stiffness: 100, damping: 20 },
+            opacity: { duration: 0.6, repeat: isLow ? Infinity : 0 },
+          }}
+        />
+
+        {/* Segment dividers */}
+        <div className="absolute inset-0">
           {[25, 50, 75].map((mark) => (
             <div
               key={mark}
-              className="absolute top-0 bottom-0 w-0.5 bg-black/30"
-              style={{ left: `${mark}%` }}
+              className="absolute top-0 bottom-0 w-[2px]"
+              style={{
+                left: `${mark}%`,
+                background: 'linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 20%, rgba(0, 0, 0, 0.45) 80%, transparent 100%)',
+              }}
             />
           ))}
         </div>
 
         {/* Team indicator */}
-        <div className={`absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-widest ${
-          team === 'A' ? 'text-cyan-200' : 'text-amber-200'
-        }`}>
-          {team === 'A' ? '◄ TEAM A' : 'TEAM B ►'}
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          <div
+            className="w-6 h-6 rounded-sm flex items-center justify-center font-bold text-xs"
+            style={{
+              background: 'rgba(246, 242, 234, 0.1)',
+              border: `2px solid ${primaryColor}`,
+              color: primaryColor,
+            }}
+          >
+            {team}
+          </div>
+          <span
+            className="text-[10px] font-bold uppercase tracking-wider"
+            style={{ color: primaryColor }}
+          >
+            {team === 'A' ? 'PLAYER 1' : 'PLAYER 2'}
+          </span>
         </div>
       </div>
 
-      {/* Damage flash overlay */}
-      <motion.div
-        className="absolute inset-0 bg-red-500 rounded-lg pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0 }}
-        whileInView={{ opacity: [0, 0.5, 0] }}
-        transition={{ duration: 0.3 }}
-      />
+      {showDamageFlash && (
+        <motion.div
+          className="absolute -inset-1 rounded pointer-events-none mix-blend-screen"
+          style={{
+            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%)',
+          }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: [0, 1, 0], scale: [0.8, 1.1, 1] }}
+          transition={{ duration: 0.3 }}
+        />
+      )}
+
+      {/* Floating damage number */}
+      <AnimatePresence>
+        {damagePopup && (
+          <motion.div
+            key={damagePopup.id}
+            className="absolute right-0 -top-2 pointer-events-none z-20"
+            initial={{ opacity: 0, y: 0, scale: 0.8 }}
+            animate={{ opacity: 1, y: -28, scale: 1.1 }}
+            exit={{ opacity: 0, y: -48, scale: 0.9 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          >
+            <span
+              className="text-xl font-black font-mono"
+              style={{
+                color: '#EF4444',
+                textShadow: '0 2px 8px rgba(0,0,0,0.6), 0 0 4px rgba(239,68,68,0.4)',
+              }}
+            >
+              -{damagePopup.amount} HP
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

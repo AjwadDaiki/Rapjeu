@@ -61,7 +61,7 @@ export function GameTimer({ duration, isRunning, onTimeUp, size = 'md' }: GameTi
   const getColor = () => {
     if (isCritical) return '#EF4444'; // Red
     if (isLow) return '#F97316'; // Orange
-    return '#3B82F6'; // Blue
+    return '#22D3EE'; // Cyan
   };
 
   const circumference = 2 * Math.PI * 45;
