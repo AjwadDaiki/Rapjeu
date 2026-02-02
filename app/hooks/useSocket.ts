@@ -1,10 +1,5 @@
 'use client';
 
-// ============================================
-// SOCKET CONTEXT + HOOK (version .ts sans JSX)
-// Corrige: skipTurn + onNotice + exports SocketProvider
-// ============================================
-
 import React, {
   createContext,
   useCallback,
@@ -33,6 +28,9 @@ import type {
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 type CleanupFn = () => void;
+
+// ✅ Tone attendu par showNotice() dans app/game/page.tsx
+export type NoticeTone = 'info' | 'warning' | 'error';
 
 interface SocketState {
   connected: boolean;
@@ -89,7 +87,7 @@ interface UseSocketReturn {
   onDisputeStarted: (callback: (dispute: DisputeState) => void) => CleanupFn | undefined;
   onDisputeResolved: (callback: (dispute: DisputeState, accepted: boolean) => void) => CleanupFn | undefined;
   onShake: (callback: (intensity: number) => void) => CleanupFn | undefined;
-  onNotice: (callback: (message: string, tone?: string) => void) => CleanupFn | undefined;
+  onNotice: (callback: (message: string, tone?: NoticeTone) => void) => CleanupFn | undefined;
   onError: (callback: (message: string) => void) => CleanupFn | undefined;
   onInputSync: (callback: (team: Team, value: string) => void) => CleanupFn | undefined;
 }
@@ -97,45 +95,27 @@ interface UseSocketReturn {
 const SocketContext = createContext<UseSocketReturn | null>(null);
 
 function getApiOrigin() {
-  // Même origin que le site (prod derrière nginx)
   if (typeof window !== 'undefined') return window.location.origin;
   return '';
 }
 
 function safeSessionGet(key: string) {
-  try {
-    return sessionStorage.getItem(key);
-  } catch {
-    return null;
-  }
+  try { return sessionStorage.getItem(key); } catch { return null; }
 }
 function safeSessionSet(key: string, value: string) {
-  try {
-    sessionStorage.setItem(key, value);
-  } catch {}
+  try { sessionStorage.setItem(key, value); } catch {}
 }
 function safeSessionRemove(key: string) {
-  try {
-    sessionStorage.removeItem(key);
-  } catch {}
+  try { sessionStorage.removeItem(key); } catch {}
 }
-
 function safeLocalGet(key: string) {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
+  try { return localStorage.getItem(key); } catch { return null; }
 }
 function safeLocalSet(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {}
+  try { localStorage.setItem(key, value); } catch {}
 }
 function safeLocalRemove(key: string) {
-  try {
-    localStorage.removeItem(key);
-  } catch {}
+  try { localStorage.removeItem(key); } catch {}
 }
 
 export function SocketProvider({ children }: { children: ReactNode }) {
@@ -168,7 +148,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     safeLocalRemove('currentRoomCode');
   }, []);
 
-  // Init socket
   useEffect(() => {
     setState(prev => ({ ...prev, connecting: true }));
 
@@ -187,16 +166,13 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socketInstance.on('connect', () => {
       setState({ connected: true, connecting: false, error: null });
 
-      // reconnexion auto si on a room + playerName
       const savedRoomCode = safeSessionGet('currentRoomCode') || safeLocalGet('currentRoomCode');
       const savedPlayerName = safeSessionGet('playerName');
 
       if (savedRoomCode && savedPlayerName) {
         setTimeout(() => {
           socketInstance.emit('room:join', savedRoomCode, savedPlayerName, (success: boolean) => {
-            if (!success) {
-              clearSession();
-            }
+            if (!success) clearSession();
           });
         }, 500);
       }
@@ -290,9 +266,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socketRef.current?.emit('game:select_mode', mode);
   }, []);
 
-  // ✅ skipTurn (corrige l'erreur TS)
   const skipTurn = useCallback(() => {
-    // dans le .tsx du repo, c'est game:skip
     socketRef.current?.emit('game:skip');
   }, []);
 
@@ -324,154 +298,43 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socketRef.current?.emit('input:typing', value);
   }, []);
 
-  // Listeners
-  const onVSIntro = useCallback((callback: (teamAPlayers: Player[], teamBPlayers: Player[]) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
+  // Helpers
+  const onAny = useCallback((event: string, callback: any): CleanupFn | undefined => {
+    const s = socketRef.current as any;
     if (!s) return undefined;
-    s.on('game:vs_intro', callback);
-    return () => s.off('game:vs_intro', callback);
+    s.on(event, callback);
+    return () => s.off(event, callback);
   }, []);
 
-  const onModeRoulette = useCallback((callback: (modes: GameMode[], selected: GameMode, duration: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:mode_roulette', callback);
-    return () => s.off('game:mode_roulette', callback);
-  }, []);
+  // Game Flow Events
+  const onVSIntro = useCallback((cb: (teamAPlayers: Player[], teamBPlayers: Player[]) => void) => onAny('game:vs_intro', cb), [onAny]);
+  const onModeRoulette = useCallback((cb: (modes: GameMode[], selected: GameMode, duration: number) => void) => onAny('game:mode_roulette', cb), [onAny]);
+  const onModeSelected = useCallback((cb: (mode: GameMode, data: ModeData) => void) => onAny('game:mode_selected', cb), [onAny]);
+  const onRoundStarted = useCallback((cb: (round: number, mode: GameMode, data: ModeData) => void) => onAny('game:round_started', cb), [onAny]);
+  const onRoundEnded = useCallback((cb: (result: RoundResult) => void) => onAny('game:round_ended', cb), [onAny]);
+  const onGameEnded = useCallback((cb: (winner: Team, scores: { A: number; B: number }, results: RoundResult[]) => void) => onAny('game:ended', cb), [onAny]);
+  const onTimerTick = useCallback((cb: (remaining: number) => void) => onAny('game:timer_tick', cb), [onAny]);
 
-  const onModeSelected = useCallback((callback: (mode: GameMode, data: ModeData) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:mode_selected', callback as any);
-    return () => s.off('game:mode_selected', callback as any);
-  }, []);
+  // Gameplay Events
+  const onAnswerResult = useCallback((cb: (result: AnswerResult) => void) => onAny('game:answer_result', cb), [onAny]);
+  const onComboUpdate = useCallback((cb: (team: Team, combo: number, multiplier: number) => void) => onAny('game:combo_update', cb), [onAny]);
+  const onChainUpdate = useCallback((cb: (chain: Array<{ artistId: string; artistName: string; answeredBy: Team; answerTime: number }>) => void) => onAny('game:chain_update', cb), [onAny]);
+  const onMythoStatement = useCallback((cb: (statement: string, index: number, total: number) => void) => onAny('game:mytho_statement', cb), [onAny]);
+  const onMythoResult = useCallback((cb: (isTrue: boolean, explanation: string, teamAScore: number, teamBScore: number) => void) => onAny('game:mytho_result', cb), [onAny]);
+  const onBetRevealed = useCallback((cb: (bets: { A: number; B: number }, winner: Team, target: number) => void) => onAny('game:bet_revealed', cb), [onAny]);
+  const onBuzzResult = useCallback((cb: (team: Team | null, timeLeft: number) => void) => onAny('game:buzz_result', cb), [onAny]);
+  const onPixelBlurUpdate = useCallback((cb: (blur: number, progress: number) => void) => onAny('game:pixel_blur_update', cb), [onAny]);
 
-  const onRoundStarted = useCallback((callback: (round: number, mode: GameMode, data: ModeData) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:round_started', callback);
-    return () => s.off('game:round_started', callback);
-  }, []);
+  // Dispute & Effects
+  const onDisputeStarted = useCallback((cb: (dispute: DisputeState) => void) => onAny('game:dispute_started', cb), [onAny]);
+  const onDisputeResolved = useCallback((cb: (dispute: DisputeState, accepted: boolean) => void) => onAny('game:dispute_resolved', cb), [onAny]);
+  const onShake = useCallback((cb: (intensity: number) => void) => onAny('shake', cb), [onAny]);
 
-  const onRoundEnded = useCallback((callback: (result: RoundResult) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:round_ended', callback);
-    return () => s.off('game:round_ended', callback);
-  }, []);
+  // ✅ onNotice: tone typé pour matcher showNotice
+  const onNotice = useCallback((cb: (message: string, tone?: NoticeTone) => void) => onAny('game:notice', cb), [onAny]);
 
-  const onGameEnded = useCallback((callback: (winner: Team, scores: { A: number; B: number }, results: RoundResult[]) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:ended', callback);
-    return () => s.off('game:ended', callback);
-  }, []);
-
-  const onTimerTick = useCallback((callback: (remaining: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:timer_tick', callback);
-    return () => s.off('game:timer_tick', callback);
-  }, []);
-
-  const onAnswerResult = useCallback((callback: (result: AnswerResult) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:answer_result', callback);
-    return () => s.off('game:answer_result', callback);
-  }, []);
-
-  const onComboUpdate = useCallback((callback: (team: Team, combo: number, multiplier: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:combo_update', callback);
-    return () => s.off('game:combo_update', callback);
-  }, []);
-
-  const onChainUpdate = useCallback((callback: (chain: Array<{ artistId: string; artistName: string; answeredBy: Team; answerTime: number }>) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:chain_update', callback);
-    return () => s.off('game:chain_update', callback);
-  }, []);
-
-  const onMythoStatement = useCallback((callback: (statement: string, index: number, total: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:mytho_statement', callback);
-    return () => s.off('game:mytho_statement', callback);
-  }, []);
-
-  const onMythoResult = useCallback((callback: (isTrue: boolean, explanation: string, teamAScore: number, teamBScore: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:mytho_result', callback);
-    return () => s.off('game:mytho_result', callback);
-  }, []);
-
-  const onBetRevealed = useCallback((callback: (bets: { A: number; B: number }, winner: Team, target: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:bet_revealed', callback);
-    return () => s.off('game:bet_revealed', callback);
-  }, []);
-
-  const onBuzzResult = useCallback((callback: (team: Team | null, timeLeft: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:buzz_result', callback);
-    return () => s.off('game:buzz_result', callback);
-  }, []);
-
-  const onPixelBlurUpdate = useCallback((callback: (blur: number, progress: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:pixel_blur_update', callback);
-    return () => s.off('game:pixel_blur_update', callback);
-  }, []);
-
-  const onDisputeStarted = useCallback((callback: (dispute: DisputeState) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:dispute_started', callback);
-    return () => s.off('game:dispute_started', callback);
-  }, []);
-
-  const onDisputeResolved = useCallback((callback: (dispute: DisputeState, accepted: boolean) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:dispute_resolved', callback);
-    return () => s.off('game:dispute_resolved', callback);
-  }, []);
-
-  const onShake = useCallback((callback: (intensity: number) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('shake', callback);
-    return () => s.off('shake', callback);
-  }, []);
-
-  // ✅ onNotice (corrige l'erreur TS). Dans le .tsx, c'est game:notice
-  const onNotice = useCallback((callback: (message: string) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('game:notice', callback);
-    return () => s.off('game:notice', callback);
-  }, []);
-
-  const onError = useCallback((callback: (message: string) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('error', callback);
-    return () => s.off('error', callback);
-  }, []);
-
-  const onInputSync = useCallback((callback: (team: Team, value: string) => void): CleanupFn | undefined => {
-    const s = socketRef.current;
-    if (!s) return undefined;
-    s.on('input:sync', callback);
-    return () => s.off('input:sync', callback);
-  }, []);
+  const onError = useCallback((cb: (message: string) => void) => onAny('error', cb), [onAny]);
+  const onInputSync = useCallback((cb: (team: Team, value: string) => void) => onAny('input:sync', cb), [onAny]);
 
   const value: UseSocketReturn = {
     socket,
@@ -522,12 +385,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     onInputSync,
   };
 
-  // ✅ pas de JSX dans un .ts
+  // Pas de JSX dans un .ts
   return React.createElement(SocketContext.Provider, { value }, children);
 }
 
 export function useSocket(): UseSocketReturn {
-  const context = useContext(SocketContext);
-  if (!context) throw new Error('useSocket must be used within a SocketProvider');
-  return context;
+  const ctx = useContext(SocketContext);
+  if (!ctx) throw new Error('useSocket must be used within a SocketProvider');
+  return ctx;
 }
