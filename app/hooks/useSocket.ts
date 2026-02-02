@@ -35,17 +35,18 @@ interface UseSocketReturn {
   state: SocketState;
   room: SerializedRoom | null;
   currentPlayer: Player | null;
-  
+
   // Actions Room
   createRoom: (config?: Partial<RoomConfig>) => Promise<string>;
   joinRoom: (roomCode: string, playerName: string) => Promise<boolean>;
   leaveRoom: () => void;
   movePlayer: (playerId: string, team: Team | null, role: PlayerRole) => void;
   setReady: (ready: boolean) => void;
-  
+
   // Actions Jeu
   startGame: () => void;
   selectMode: (mode: GameMode) => void;
+  skipTurn: () => void;
   submitAnswer: (answer: string) => void;
   submitBet: (bet: number) => void;
   submitMytho: (isTrue: boolean) => void;
@@ -53,7 +54,7 @@ interface UseSocketReturn {
   requestDispute: (answerId: string) => void;
   voteDispute: (accept: boolean) => void;
   syncInput: (value: string) => void;
-  
+
   // Game Flow Events
   onVSIntro: (callback: (teamAPlayers: Player[], teamBPlayers: Player[]) => void) => CleanupFn | undefined;
   onModeRoulette: (callback: (modes: GameMode[], selected: GameMode, duration: number) => void) => CleanupFn | undefined;
@@ -62,7 +63,7 @@ interface UseSocketReturn {
   onRoundEnded: (callback: (result: RoundResult) => void) => CleanupFn | undefined;
   onGameEnded: (callback: (winner: Team, scores: { A: number; B: number }, results: RoundResult[]) => void) => CleanupFn | undefined;
   onTimerTick: (callback: (remaining: number) => void) => CleanupFn | undefined;
-  
+
   // Gameplay Events
   onAnswerResult: (callback: (result: AnswerResult) => void) => CleanupFn | undefined;
   onComboUpdate: (callback: (team: Team, combo: number, multiplier: number) => void) => CleanupFn | undefined;
@@ -72,7 +73,7 @@ interface UseSocketReturn {
   onBetRevealed: (callback: (bets: { A: number; B: number }, winner: Team, target: number) => void) => CleanupFn | undefined;
   onBuzzResult: (callback: (team: Team | null, timeLeft: number) => void) => CleanupFn | undefined;
   onPixelBlurUpdate: (callback: (blur: number, progress: number) => void) => CleanupFn | undefined;
-  
+
   // Dispute & Effects
   onDisputeStarted: (callback: (dispute: DisputeState) => void) => CleanupFn | undefined;
   onDisputeResolved: (callback: (dispute: DisputeState, accepted: boolean) => void) => CleanupFn | undefined;
@@ -102,7 +103,7 @@ export function useSocket(): UseSocketReturn {
   useEffect(() => {
     const initSocket = () => {
       setState(prev => ({ ...prev, connecting: true }));
-      
+
       const socket: TypedSocket = io({
         path: '/socket.io',
         autoConnect: true,
@@ -116,15 +117,15 @@ export function useSocket(): UseSocketReturn {
       socket.on('connect', () => {
         console.log('🔌 Socket connecté');
         setState({ connected: true, connecting: false, error: null });
-        
+
         // Tentative de reconnexion automatique
         try {
           // sessionStorage = par onglet, localStorage = room partagé
           const savedRoomCode = sessionStorage.getItem('currentRoomCode') || localStorage.getItem('currentRoomCode');
           const savedPlayerName = sessionStorage.getItem('playerName');
-          
+
           console.log('📦 Storage check:', { savedRoomCode, savedPlayerName });
-          
+
           if (savedRoomCode && savedPlayerName) {
             console.log('🔄 Tentative reconnexion auto:', savedRoomCode, savedPlayerName);
             setTimeout(() => {
@@ -275,6 +276,11 @@ export function useSocket(): UseSocketReturn {
   const selectMode = useCallback((mode: string) => {
     if (!socketRef.current) return;
     socketRef.current.emit('game:select_mode', mode);
+  }, []);
+
+  const skipTurn = useCallback(() => {
+    if (!socketRef.current) return;
+    socketRef.current.emit('game:skip');
   }, []);
 
   const submitAnswer = useCallback((answer: string) => {
@@ -468,6 +474,7 @@ export function useSocket(): UseSocketReturn {
     setReady,
     startGame,
     selectMode,
+    skipTurn,
     submitAnswer,
     submitBet,
     submitMytho,
