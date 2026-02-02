@@ -89,7 +89,7 @@ interface UseSocketReturn {
   onDisputeStarted: (callback: (dispute: DisputeState) => void) => CleanupFn | undefined;
   onDisputeResolved: (callback: (dispute: DisputeState, accepted: boolean) => void) => CleanupFn | undefined;
   onShake: (callback: (intensity: number) => void) => CleanupFn | undefined;
-  onNotice: (callback: (message: string) => void) => CleanupFn | undefined;
+  onNotice: (callback: (message: string, tone?: string) => void) => CleanupFn | undefined;
   onError: (callback: (message: string) => void) => CleanupFn | undefined;
   onInputSync: (callback: (team: Team, value: string) => void) => CleanupFn | undefined;
 }
@@ -342,8 +342,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const onModeSelected = useCallback((callback: (mode: GameMode, data: ModeData) => void): CleanupFn | undefined => {
     const s = socketRef.current;
     if (!s) return undefined;
-    s.on('game:mode_selected', callback);
-    return () => s.off('game:mode_selected', callback);
+    s.on('game:mode_selected', callback as any);
+    return () => s.off('game:mode_selected', callback as any);
   }, []);
 
   const onRoundStarted = useCallback((callback: (round: number, mode: GameMode, data: ModeData) => void): CleanupFn | undefined => {
